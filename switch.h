@@ -28,11 +28,18 @@ public:
         SwitchMessage(const QString& _inMessage, const QString& _outMessage, TimerEffect _effect = TimerNoEffect);
         SwitchMessage(const SwitchMessage& other);
         SwitchMessage();
+
+        void readJSON(const QJsonObject &json);
+        void writeJSON(QJsonObject &json) const;
     };
 
-    explicit Switch(const QString& name, QObject *parent = nullptr);
-    void setTimer(const QString& timerMessage, int timerPeriod /*ms*/);
+    Switch(QObject *parent = nullptr);
+    Switch(const QString& name, QObject *parent = nullptr);
+    void setTimer(const QString& timerMessage, int timerPeriod = 1000 /*ms*/);
     bool addMessage(const QString& inMessage, const QString& outMessage, TimerEffect effect = TimerNoEffect);
+
+    void readJSON(const QJsonObject &json);
+    void writeJSON(QJsonObject &json) const;
 
 protected:
     QTimer repeatTimer;
@@ -46,7 +53,7 @@ public slots:
     void processMessage(const QString& msg);
 
 protected slots:
-    void timerMessage();
+    void sendTimerMessage();
 
 };
 

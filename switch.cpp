@@ -1,4 +1,27 @@
 #include "switch.h"
+#include <QJsonArray>
+#include "jsontools.h"
+
+void Switch::SwitchMessage::readJSON(const QJsonObject &json) {
+    getJSONString(json, "InMessage", inMessage);
+    getJSONString(json, "OutMessage", outMessage);
+    getJSONInt(json, "TimerEffect", reinterpret_cast<int&>(effect));
+}
+
+void Switch::SwitchMessage::writeJSON(QJsonObject &json) const {
+    json["InMessage"] = inMessage;
+    json["OutMessage"] = outMessage;
+    json["TimerEffect"] = effect;
+}
+
+Switch::Switch(QObject *parent) :
+    QObject(parent),
+    mTimerMessage("The timer has elapsed.")
+{
+    repeatTimer.setInterval(1 * 60 * 1000);
+    repeatTimer.setSingleShot(false);
+    connect(&repeatTimer, SIGNAL(timeout()), SLOT(sendTimerMessage()));
+}
 
 Switch::Switch(const QString &name, QObject *parent) :
     QObject(parent),
@@ -7,7 +30,7 @@ Switch::Switch(const QString &name, QObject *parent) :
 {
     repeatTimer.setInterval(1 * 60 * 1000);
     repeatTimer.setSingleShot(false);
-    connect(&repeatTimer, SIGNAL(timeout()), SLOT(timerMessage()));
+    connect(&repeatTimer, SIGNAL(timeout()), SLOT(sendTimerMessage()));
 }
 
 void Switch::setTimer(const QString& timerMessage, int timerPeriod /*ms*/) {
@@ -21,6 +44,27 @@ bool Switch::addMessage(const QString& inMessage, const QString& outMessage, Tim
     SwitchMessage msg(inMessage, outMessage, effect);
     messages.insert(inMessage, msg);
     return true;
+}
+
+void Switch::readJSON(const QJsonObject &json) {
+    int tmpInt;
+    getJSONString(json, "Name", mName);
+    getJSONString(json, "TimerMessage", mTimerMessage);
+    getJSONInt(json, "TimerLen", tmpInt);
+    repeatTimer.setInterval(tmpInt);
+}
+
+void Switch::writeJSON(QJsonObject &json) const {
+    json["Name"] = mName;
+    json["TimerLen"] = repeatTimer.interval();
+    json["TimerMessage"] = mTimerMessage;
+    QJsonArray _messages;
+    for (auto i = messages.begin(); i != messages.end(); ++i) {
+        QJsonObject msg;
+        i->writeJSON(msg);
+        _messages.append(msg);
+    }
+    json["Messages"] = _messages;
 }
 
 void Switch::processMessage(const QString& msg) {
@@ -42,10 +86,9 @@ void Switch::processMessage(const QString& msg) {
     else {
         emit postMessage(mName, QString("%1 received an unknown message (%2)").arg(mName, msg));
     }
-
 }
 
-void Switch::timerMessage() {
+void Switch::sendTimerMessage() {
         emit postMessage(mName, mTimerMessage);
 }
 

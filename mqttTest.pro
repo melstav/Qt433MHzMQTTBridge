@@ -18,7 +18,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     monitor.cpp \
-    switch.cpp
+    switch.cpp \
+    jsontools.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -27,4 +28,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     monitor.h \
-    switch.h
+    switch.h \
+    jsontools.h
