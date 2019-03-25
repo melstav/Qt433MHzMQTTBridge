@@ -80,6 +80,7 @@ Monitor::Monitor(QObject *parent) :
     connect(&m_port, SIGNAL(readyRead()), SLOT(onSerialDataReady()));
     repeatTimer.setInterval(200 /* ms */);
     repeatTimer.setSingleShot(true);
+    setupSwitches();
     if (!loadConfig()) {
         saveConfig();
     }
@@ -216,4 +217,10 @@ void Monitor::onSerialDataReady() {
         }
         repeatTimer.start();
     }
+}
+
+void Monitor::setupSwitches() {
+    Switch* newSwitch = new Switch("Switch1", this);
+    newSwitch->addMessage("1-24-abcd", "I got a Message!");
+    switches.insert("1-24-abcd", QVariant::fromValue(newSwitch));
 }

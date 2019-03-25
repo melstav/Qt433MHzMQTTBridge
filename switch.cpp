@@ -13,7 +13,7 @@ void Switch::SwitchMessage::writeJSON(QJsonObject &json) const {
     json["OutMessage"] = outMessage;
     json["TimerEffect"] = effect;
 }
-
+#if 0
 Switch::Switch(QObject *parent) :
     QObject(parent),
     mTimerMessage("The timer has elapsed.")
@@ -22,6 +22,7 @@ Switch::Switch(QObject *parent) :
     repeatTimer.setSingleShot(false);
     connect(&repeatTimer, SIGNAL(timeout()), SLOT(sendTimerMessage()));
 }
+#endif
 
 Switch::Switch(const QString &name, QObject *parent) :
     QObject(parent),
@@ -33,6 +34,13 @@ Switch::Switch(const QString &name, QObject *parent) :
     connect(&repeatTimer, SIGNAL(timeout()), SLOT(sendTimerMessage()));
 }
 
+Switch::~Switch() {
+    auto i = messages.begin();
+    while (i != messages.end()) {
+        delete *i;
+        i = messages.erase(i);
+    }
+}
 void Switch::setTimer(const QString& timerMessage, int timerPeriod /*ms*/) {
     mTimerMessage = timerMessage;
     repeatTimer.setInterval(timerPeriod);
@@ -41,8 +49,8 @@ void Switch::setTimer(const QString& timerMessage, int timerPeriod /*ms*/) {
 bool Switch::addMessage(const QString& inMessage, const QString& outMessage, TimerEffect effect) {
     if (messages.contains(inMessage)) { return false; }
 
-    SwitchMessage msg(inMessage, outMessage, effect);
-    messages.insert(inMessage, msg);
+    SwitchMessage* msg = new SwitchMessage(inMessage, outMessage, effect);
+    messages.insert(const_cast<QString&>(inMessage), msg);
     return true;
 }
 
@@ -61,7 +69,7 @@ void Switch::writeJSON(QJsonObject &json) const {
     QJsonArray _messages;
     for (auto i = messages.begin(); i != messages.end(); ++i) {
         QJsonObject msg;
-        i->writeJSON(msg);
+        (*i)->writeJSON(msg);
         _messages.append(msg);
     }
     json["Messages"] = _messages;
@@ -70,9 +78,9 @@ void Switch::writeJSON(QJsonObject &json) const {
 void Switch::processMessage(const QString& msg) {
     const SwitchMessage blankMsg;
     if (messages.contains(msg)) {
-        SwitchMessage m = messages.value(msg);
-        emit postMessage(mName, m.outMessage);
-        switch(m.effect) {
+        SwitchMessage* m = messages.value(msg);
+        emit postMessage(mName, m->outMessage);
+        switch(m->effect) {
         case TimerStart:
             repeatTimer.start();
             break;
