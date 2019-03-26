@@ -115,9 +115,9 @@ bool Monitor::saveConfig() {
           return false;
       }
 
-      QJsonObject gameObject;
-      writeJSON(gameObject);
-      QJsonDocument saveDoc(gameObject);
+      QJsonObject configObject;
+      writeJSON(configObject);
+      QJsonDocument saveDoc(configObject);
       saveFile.write(saveDoc.toJson());
 
       return true;
@@ -128,6 +128,15 @@ void Monitor::readJSON(const QJsonObject &json) {
         serialSettings.readJSON(json["Serial"].toObject());
     if (json.contains("MQTT") && json["MQTT"].isObject())
         mqttSettings.readJSON(json["MQTT"].toObject());
+    if (json.contains("Switches") && json["Switches"].isArray()) {
+        QJsonArray tmpArray = json["Switches"].toArray();
+        switches.clear();
+        for (auto i = tmpArray.begin(); i != tmpArray.end(); ++i) {
+            Switch* newSwitch = new Switch();
+            newSwitch->readJSON(i->toObject());
+            switches.insert(newSwitch->name(), QVariant::fromValue(newSwitch));
+        }
+    }
 }
 
 void Monitor::writeJSON(QJsonObject &json) const {
@@ -137,6 +146,13 @@ void Monitor::writeJSON(QJsonObject &json) const {
     tmpObject = QJsonObject();
     mqttSettings.writeJSON(tmpObject);
     json["MQTT"] = tmpObject;
+    QJsonArray tmpArray;
+    for (auto i = switches.begin(); i != switches.end(); ++i) {
+        tmpObject = QJsonObject();
+        i.value().value<Switch*>()->writeJSON(tmpObject);
+        tmpArray.append(tmpObject);
+    }
+    json["Switches"] = tmpArray;
 }
 
 void Monitor::connectMQTT() {

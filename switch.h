@@ -37,6 +37,7 @@ public:
     Switch(const QString& name = QString(), QObject *parent = nullptr);
     virtual ~Switch();
 
+    const QString& name() { return mName; }
     void setTimer(const QString& timerMessage, int timerPeriod = 1000 /*ms*/);
     bool addMessage(const QString& inMessage, const QString& outMessage, TimerEffect effect = TimerNoEffect);
 

@@ -60,6 +60,15 @@ void Switch::readJSON(const QJsonObject &json) {
     getJSONString(json, "TimerMessage", mTimerMessage);
     getJSONInt(json, "TimerLen", tmpInt);
     repeatTimer.setInterval(tmpInt);
+    if (json.contains("Messages") && json["Messages"].isArray()) {
+        QJsonArray tmpArray = json["Messages"].toArray();
+        messages.clear();
+        for (auto i = tmpArray.begin(); i != tmpArray.end(); ++i) {
+            SwitchMessage* newMessage = new SwitchMessage();
+            newMessage->readJSON(i->toObject());
+            messages.insert(newMessage->inMessage, newMessage);
+        }
+    }
 }
 
 void Switch::writeJSON(QJsonObject &json) const {
