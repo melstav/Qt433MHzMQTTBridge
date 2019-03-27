@@ -38,6 +38,7 @@ public:
     virtual ~Switch();
 
     const QString& name() { return mName; }
+    QStringList knownMessages() { return messages.keys(); }
     void setTimer(const QString& timerMessage, int timerPeriod = 1000 /*ms*/);
     bool addMessage(const QString& inMessage, const QString& outMessage, TimerEffect effect = TimerNoEffect);
 

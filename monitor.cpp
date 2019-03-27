@@ -80,8 +80,8 @@ Monitor::Monitor(QObject *parent) :
     connect(&m_port, SIGNAL(readyRead()), SLOT(onSerialDataReady()));
     repeatTimer.setInterval(200 /* ms */);
     repeatTimer.setSingleShot(true);
-    setupSwitches();
     if (!loadConfig()) {
+//        setupSwitches();
         saveConfig();
     }
 }
@@ -133,8 +133,12 @@ void Monitor::readJSON(const QJsonObject &json) {
         switches.clear();
         for (auto i = tmpArray.begin(); i != tmpArray.end(); ++i) {
             Switch* newSwitch = new Switch();
+            connect(newSwitch, SIGNAL(postMessage(QString, QString)), SLOT(postedMessage(QString, QString)));
             newSwitch->readJSON(i->toObject());
-            switches.insert(newSwitch->name(), QVariant::fromValue(newSwitch));
+            QStringList messages = newSwitch->knownMessages();
+            for (auto j = messages.begin(); j != messages.end(); ++j) {
+                switches.insert(*j, QVariant::fromValue(newSwitch));
+            }
         }
     }
 }
@@ -237,6 +241,14 @@ void Monitor::onSerialDataReady() {
 
 void Monitor::setupSwitches() {
     Switch* newSwitch = new Switch("Switch1", this);
+    connect(newSwitch, SIGNAL(postMessage(QString, QString)), SLOT(postedMessage(QString, QString)));
     newSwitch->addMessage("1-24-abcd", "I got a Message!");
     switches.insert("1-24-abcd", QVariant::fromValue(newSwitch));
+}
+
+void Monitor::postedMessage(const QString& topic, const QString& message) {
+    qDebug() << "Message to '" << topic << "' : " << message;
+    if (m_client.publish((mqttSettings.topCategory + "/" + topic), message.toUtf8(), 1, true) == -1)
+        qWarning("Could not publish the message.");
+
 }

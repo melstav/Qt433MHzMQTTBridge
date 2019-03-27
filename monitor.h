@@ -77,6 +77,7 @@ public slots:
 
 protected slots:
     void onMQTTConnected();
+    void postedMessage(const QString& topic, const QString& message);
 
 };
 
