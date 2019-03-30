@@ -13,16 +13,16 @@ void Monitor::MQTTSettings::readJSON(const QJsonObject &json) {
     getJSONString(json, "StartupMessage", startMessage);
     getJSONString(json, "DefaultMessage", defaultMessage);
     getJSONString(json, "LastWillMessage", willMessage);
-    getJSONInt(json, "Port", (int&)port);
+    getJSONInt(json, "Port", port);
     getJSONInt(json, "MessageQoS", reinterpret_cast<int&>(msgQoS));
     getJSONInt(json, "LastWillQoS", reinterpret_cast<int&>(willQoS));
-    getJSONBool(json, "dataBits", msgRetain);
-    getJSONBool(json, "dataBits", willRetain);
+    getJSONBool(json, "MessageRetain", msgRetain);
+    getJSONBool(json, "LastWillRetain", willRetain);
 }
 
 void Monitor::MQTTSettings::writeJSON(QJsonObject &json) const {
     json["Host"] = hostname;
-    json["Port"] = port;
+    json["Port"] = int(port);
     json["TopCategory"] = topCategory;
     json["DefaultTopic"] = defaultTopic;
     json["LastWillTopic"] = willTopic;
@@ -160,8 +160,9 @@ void Monitor::writeJSON(QJsonObject &json) const {
 }
 
 void Monitor::connectMQTT() {
+    qDebug() << QString("Connecting to MQTT Server %1:%2").arg(mqttSettings.hostname, mqttSettings.port);
     m_client.setHostname(mqttSettings.hostname);
-    m_client.setPort(mqttSettings.port);
+    m_client.setPort(quint16(mqttSettings.port));
     m_client.setWillTopic(mqttSettings.topCategory + "/" + mqttSettings.defaultTopic);
     m_client.setWillMessage(mqttSettings.willMessage.toUtf8());
     m_client.setWillQoS(mqttSettings.willQoS);
@@ -177,8 +178,10 @@ void Monitor::onMQTTConnected() {
         return;
     }
 
-    if (m_client.publish((mqttSettings.topCategory + "/" + mqttSettings.defaultTopic), QString(mqttSettings.startMessage).toUtf8(), 1, true) == -1)
-        qWarning("Could not publish the message.");
+//    if (m_client.publish((mqttSettings.topCategory + "/" + mqttSettings.defaultTopic), QString(mqttSettings.startMessage).toUtf8(), 1, true) == -1)
+//        qWarning("Could not publish the message.");
+      postedMessage(mqttSettings.defaultTopic, mqttSettings.startMessage);
+
 }
 
 void Monitor::connectSerial() {
@@ -231,8 +234,9 @@ void Monitor::onSerialDataReady() {
             if (!msgHandled) {
                 QString message = mqttSettings.defaultMessage.arg(QString(line));
                 qDebug() << message;
-                if (m_client.publish((mqttSettings.topCategory + "/" + mqttSettings.defaultTopic), message.toUtf8(), 1, true) == -1)
-                    qWarning("Could not publish the message.");
+//                if (m_client.publish((mqttSettings.topCategory + "/" + mqttSettings.defaultTopic), message.toUtf8(), 1, true) == -1)
+//                    qWarning("Could not publish the message.");
+                postedMessage(mqttSettings.defaultTopic, message);
             }
         }
         repeatTimer.start();
@@ -248,7 +252,7 @@ void Monitor::setupSwitches() {
 
 void Monitor::postedMessage(const QString& topic, const QString& message) {
     qDebug() << "Message to '" << topic << "' : " << message;
-    if (m_client.publish((mqttSettings.topCategory + "/" + topic), message.toUtf8(), 1, true) == -1)
+    if (m_client.publish((mqttSettings.topCategory + "/" + topic), message.toUtf8(), mqttSettings.msgQoS, mqttSettings.msgRetain) == -1)
         qWarning("Could not publish the message.");
 
 }

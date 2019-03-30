@@ -14,7 +14,7 @@ public:
     class MQTTSettings {
     public:
         QString hostname;
-        unsigned short port;
+        int port;
         QString topCategory;
         QString defaultTopic, willTopic;
         QString startMessage, defaultMessage, willMessage;
