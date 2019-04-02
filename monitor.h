@@ -49,6 +49,9 @@ public:
 
 protected:
     QTimer repeatTimer;
+    bool serviceRunning;
+    bool portConnected;
+    bool mqttConnected;
 
     MQTTSettings mqttSettings;
     SerialSettings serialSettings;
@@ -73,10 +76,17 @@ signals:
 public slots:
     void connectMQTT();
     void connectSerial();
+    void disconnectSerial();
     void onSerialDataReady();
+
+    void onServiceStarted();
+    void onServiceStopped();
+    void onServiceInstalled();
+    void onServiceUninstalled();
 
 protected slots:
     void onMQTTConnected();
+    void onMQTTDisconnected();
     void postedMessage(const QString& topic, const QString& message);
 
 };

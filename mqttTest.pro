@@ -1,5 +1,5 @@
 QT -= gui
-QT += core network mqtt serialport
+QT += core network mqtt serialport daemon
 
 CONFIG += c++11 console
 CONFIG -= app_bundle

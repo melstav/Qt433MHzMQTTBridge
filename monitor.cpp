@@ -1,6 +1,6 @@
 #include "monitor.h"
 #include <QVariant>
-#include <QtDebug>
+#include <QDaemonLog>
 #include <QTimer>
 #include <QRegularExpression>
 #include "jsontools.h"
@@ -56,6 +56,9 @@ void Monitor::SerialSettings::writeJSON(QJsonObject &json) const {
 
 Monitor::Monitor(QObject *parent) :
     QObject(parent),
+    serviceRunning(false),
+    portConnected(false),
+    mqttConnected(false),
     mqttSettings(
         {
             "192.168.1.30", 1883,
@@ -77,6 +80,7 @@ Monitor::Monitor(QObject *parent) :
     )
 {
     connect(&m_client, SIGNAL(connected()), SLOT(onMQTTConnected()));
+    connect(&m_client, SIGNAL(disconnected()), SLOT(onMQTTDisconnected()));
     connect(&m_port, SIGNAL(readyRead()), SLOT(onSerialDataReady()));
     repeatTimer.setInterval(200 /* ms */);
     repeatTimer.setSingleShot(true);
@@ -94,7 +98,7 @@ bool Monitor::loadConfig() {
     QFile loadFile(QStringLiteral("save.json"));
 
       if (!loadFile.open(QIODevice::ReadOnly)) {
-          qWarning("Couldn't open save file.");
+          qDaemonLog("Couldn't open save file.");
           return false;
       }
 
@@ -111,7 +115,7 @@ bool Monitor::saveConfig() {
     QFile saveFile(QStringLiteral("save.json"));
 
       if (!saveFile.open(QIODevice::WriteOnly)) {
-          qWarning("Couldn't open save file.");
+          qDaemonLog("Couldn't open save file.", QDaemonLog::WarningEntry);
           return false;
       }
 
@@ -160,7 +164,7 @@ void Monitor::writeJSON(QJsonObject &json) const {
 }
 
 void Monitor::connectMQTT() {
-    qDebug() << QString("Connecting to MQTT Server %1:%2").arg(mqttSettings.hostname, mqttSettings.port);
+    qDaemonLog() << QString("Connecting to MQTT Server %1:%2").arg(mqttSettings.hostname, mqttSettings.port);
     m_client.setHostname(mqttSettings.hostname);
     m_client.setPort(quint16(mqttSettings.port));
     m_client.setWillTopic(mqttSettings.topCategory + "/" + mqttSettings.defaultTopic);
@@ -171,10 +175,10 @@ void Monitor::connectMQTT() {
 }
 
 void Monitor::onMQTTConnected() {
-    qDebug() << "Connected to MQTT Server.";
+    qDaemonLog() << "Connected to MQTT Server.";
     auto subscription = m_client.subscribe(mqttSettings.topCategory + "/" + mqttSettings.defaultTopic);
     if (!subscription) {
-        qWarning("Could not subscribe. Is there a valid connection?");
+        qDaemonLog("Could not subscribe. Is there a valid connection?", QDaemonLog::WarningEntry);
         return;
     }
 
@@ -187,19 +191,23 @@ void Monitor::onMQTTConnected() {
 void Monitor::connectSerial() {
     m_port.setPortName(serialSettings.portName);
     bool rv = m_port.open(QIODevice::ReadWrite);
-    if (rv && m_port.setBaudRate(serialSettings.baudRate)
+    rv &= m_port.setBaudRate(serialSettings.baudRate)
             && m_port.setDataBits(serialSettings.dataBits)
             && m_port.setParity(serialSettings.parity)
             && m_port.setStopBits(serialSettings.stopBits)
-            && m_port.setFlowControl(serialSettings.flowControl)
-            )
+            && m_port.setFlowControl(serialSettings.flowControl);
+    if (rv)
     {
-        qDebug() << "Serial port has been opened.";
+        qDaemonLog() << "Serial port has been opened.";
     }
     else {
-        qWarning() << "Could not open serial port.";
+        qDaemonLog("Could not open serial port.", QDaemonLog::WarningEntry);
         m_port.close();
     }
+}
+
+void Monitor::disconnectSerial() {
+    m_port.close();
 }
 
 void Monitor::onSerialDataReady() {
@@ -213,7 +221,7 @@ void Monitor::onSerialDataReady() {
 
         if ( (line != prevLine) || (!repeatTimer.isActive()) ) {
             prevLine = line;
-            qDebug() << "Received: " << line;
+            qDaemonLog() << "Received: " << line;
             emit receivedMessage(line);
             if (switches.contains(line)) {
                 msgHandled = true;
@@ -233,7 +241,7 @@ void Monitor::onSerialDataReady() {
 
             if (!msgHandled) {
                 QString message = mqttSettings.defaultMessage.arg(QString(line));
-                qDebug() << message;
+                qDaemonLog() << message;
 //                if (m_client.publish((mqttSettings.topCategory + "/" + mqttSettings.defaultTopic), message.toUtf8(), 1, true) == -1)
 //                    qWarning("Could not publish the message.");
                 postedMessage(mqttSettings.defaultTopic, message);
@@ -251,8 +259,30 @@ void Monitor::setupSwitches() {
 }
 
 void Monitor::postedMessage(const QString& topic, const QString& message) {
-    qDebug() << "Message to '" << topic << "' : " << message;
+    qDaemonLog() << "Message to '" << topic << "' : " << message;
     if (m_client.publish((mqttSettings.topCategory + "/" + topic), message.toUtf8(), mqttSettings.msgQoS, mqttSettings.msgRetain) == -1)
-        qWarning("Could not publish the message.");
+        qDaemonLog("Could not publish the message.", QDaemonLog::WarningEntry);
+
+}
+
+void Monitor::onServiceStarted() {
+    connectMQTT();
+    connectSerial();
+}
+
+void Monitor::onServiceStopped() {
+    disconnectSerial();
+    m_client.disconnectFromHost();
+}
+
+void Monitor::onServiceInstalled() {
+
+}
+
+void Monitor::onServiceUninstalled() {
+
+}
+
+void Monitor::onMQTTDisconnected() {
 
 }
