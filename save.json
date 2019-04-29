@@ -1,0 +1,242 @@
+{
+    "MQTT": {
+        "DefaultMessage": "Unknown message received: %1",
+        "DefaultTopic": "state",
+        "Host": "192.168.1.30",
+        "LastWillMessage": "DoorSensor monitor died unexpectedly.",
+        "LastWillQoS": 1,
+        "LastWillRetain": false,
+        "LastWillTopic": "state",
+        "MessageQoS": 1,
+        "MessageRetain": false,
+        "Port": 1883,
+        "StartupMessage": "DoorSensor monitor Started",
+        "TopCategory": "DoorSensor"
+    },
+    "Serial": {
+        "baud": 9600,
+        "dataBits": 8,
+        "flowControl": 0,
+        "parity": 0,
+        "port": "433Monitor",
+        "stopBits": 1
+    },
+    "Switches": [
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-1746",
+                    "OutMessage": "The Back Door has been opened",
+                    "TimerEffect": 0
+                }
+            ],
+            "Name": "BackDoor",
+            "TimerLen": -1,
+            "TimerMessage": "The timer has elapsed."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-5a0a",
+                    "OutMessage": "The freezer has been opened.",
+                    "TimerEffect": 1
+                },
+                {
+                    "InMessage": "1-24-5a0e",
+                    "OutMessage": "The Freezer has been closed.",
+                    "TimerEffect": 2
+                }
+            ],
+            "Name": "Freezer",
+            "DelayLen": 30000,
+            "TimerLen": 300000,
+            "TimerMessage": "The freezer is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-670a",
+                    "OutMessage": "The Kids' Toilet is closed.",
+                    "TimerEffect": 2
+                },
+                {
+                    "InMessage": "1-24-670e",
+                    "OutMessage": "The Kids' Toilet is open.",
+                    "TimerEffect": 1
+                }
+            ],
+            "Name": "Kids' Toilet",
+            "TimerLen": 600000,
+            "TimerMessage": "The kids' toilet is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-670a",
+                    "OutMessage": "The Kids' Toilet is closed.",
+                    "TimerEffect": 2
+                },
+                {
+                    "InMessage": "1-24-670e",
+                    "OutMessage": "The Kids' Toilet is open.",
+                    "TimerEffect": 1
+                }
+            ],
+            "Name": "Kids' Toilet",
+            "TimerLen": 600000,
+            "TimerMessage": "The kids' toilet is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-7e0a",
+                    "OutMessage": "The Downstairs Toilet is closed.",
+                    "TimerEffect": 2
+                },
+                {
+                    "InMessage": "1-24-7e0e",
+                    "OutMessage": "The Downstairs Toilet is open.",
+                    "TimerEffect": 1
+                }
+            ],
+            "Name": "Downstairs Toilet",
+            "TimerLen": 600000,
+            "TimerMessage": "The downstairs toilet is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-7e0a",
+                    "OutMessage": "The Downstairs Toilet is closed.",
+                    "TimerEffect": 2
+                },
+                {
+                    "InMessage": "1-24-7e0e",
+                    "OutMessage": "The Downstairs Toilet is open.",
+                    "TimerEffect": 1
+                }
+            ],
+            "Name": "Downstairs Toilet",
+            "TimerLen": 600000,
+            "TimerMessage": "The downstairs toilet is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-8346",
+                    "OutMessage": "The Front Door has been opened",
+                    "TimerEffect": 0
+                }
+            ],
+            "Name": "FrontDoor",
+            "TimerLen": -1,
+            "TimerMessage": "The timer has elapsed."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-8b46",
+                    "OutMessage": "The Inside Garage Door has been opened",
+                    "TimerEffect": 0
+                }
+            ],
+            "Name": "InsideGarageDoor",
+            "TimerLen": -1,
+            "TimerMessage": "The timer has elapsed."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-a746",
+                    "OutMessage": "The Basement Door has been opened",
+                    "TimerEffect": 0
+                }
+            ],
+            "Name": "BasementDoor",
+            "TimerLen": -1,
+            "TimerMessage": "The timer has elapsed."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-abcd",
+                    "OutMessage": "I got a Message!",
+                    "TimerEffect": 0
+                }
+            ],
+            "Name": "Switch1",
+            "TimerLen": 60000,
+            "TimerMessage": "The timer has elapsed."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-bc0a",
+                    "OutMessage": "The Outside Freezer has been opened.",
+                    "TimerEffect": 1
+                },
+                {
+                    "InMessage": "1-24-bc0e",
+                    "OutMessage": "The Outside Freezer has been closed.",
+                    "TimerEffect": 2
+                }
+            ],
+            "Name": "Outside Freezer",
+            "DelayLen": 30000,
+            "TimerLen": 300000,
+            "TimerMessage": "The Outside Freezer is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-bc0a",
+                    "OutMessage": "The Outside Freezer has been opened.",
+                    "TimerEffect": 1
+                },
+                {
+                    "InMessage": "1-24-bc0e",
+                    "OutMessage": "The Outside Freezer has been closed.",
+                    "TimerEffect": 2
+                }
+            ],
+            "Name": "Outside Freezer",
+            "TimerLen": 300000,
+            "TimerMessage": "The Outside Freezer is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-fe0a",
+                    "OutMessage": "The Refrigerator is open.",
+                    "TimerEffect": 1
+                },
+                {
+                    "InMessage": "1-24-fe0e",
+                    "OutMessage": "The Refrigerator is closed.",
+                    "TimerEffect": 2
+                }
+            ],
+            "Name": "Refrigerator",
+            "DelayLen": 30000,
+            "TimerLen": 300000,
+            "TimerMessage": "The refrigerator is still open."
+        },
+        {
+            "Messages": [
+                {
+                    "InMessage": "1-24-fe0a",
+                    "OutMessage": "The Refrigerator is open.",
+                    "TimerEffect": 1
+                },
+                {
+                    "InMessage": "1-24-fe0e",
+                    "OutMessage": "The Refrigerator is closed.",
+                    "TimerEffect": 2
+                }
+            ],
+            "Name": "Refrigerator",
+            "TimerLen": 300000,
+            "TimerMessage": "The refrigerator is still open."
+        }
+    ]
+}

@@ -30,3 +30,6 @@ HEADERS += \
     monitor.h \
     switch.h \
     jsontools.h
+
+DISTFILES += \
+    save.json

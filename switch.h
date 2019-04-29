@@ -46,7 +46,9 @@ public:
     void writeJSON(QJsonObject &json) const;
 
 protected:
-    QTimer repeatTimer;
+    QTimer myTimer;
+    SwitchMessage *delayMessage;
+    int delayTimerLen, repeatTimerLen;
     QString mName, mTimerMessage;
     QMap<QString, SwitchMessage*> messages;
 
