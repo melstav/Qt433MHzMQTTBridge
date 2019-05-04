@@ -36,12 +36,17 @@ void Monitor::MQTTSettings::writeJSON(QJsonObject &json) const {
 }
 
 void Monitor::SerialSettings::readJSON(const QJsonObject &json) {
+    int t;
     getJSONString(json, "port", portName);
     getJSONInt(json, "baud", baudRate);
-    getJSONInt(json, "dataBits", reinterpret_cast<int&>(dataBits));
-    getJSONInt(json, "parity", reinterpret_cast<int&>(parity));
-    getJSONInt(json, "stopBits", reinterpret_cast<int&>(stopBits));
-    getJSONInt(json, "flowControl", reinterpret_cast<int&>(flowControl));
+    getJSONInt(json, "dataBits", t);
+    dataBits = QSerialPort::DataBits(t);
+    getJSONInt(json, "parity", t);
+    parity = QSerialPort::Parity(t);
+    getJSONInt(json, "stopBits", t);
+    stopBits = QSerialPort::StopBits(t);
+    getJSONInt(json, "flowControl", t);
+    flowControl = QSerialPort::FlowControl(t);
 }
 
 void Monitor::SerialSettings::writeJSON(QJsonObject &json) const {
@@ -98,7 +103,7 @@ bool Monitor::loadConfig() {
     QFile loadFile(QStringLiteral("save.json"));
 
       if (!loadFile.open(QIODevice::ReadOnly)) {
-          qDaemonLog("Couldn't open save file.");
+          qDaemonLog(QString("Couldn't open config file %1 for reading.").arg(QFileInfo(loadFile).absoluteFilePath()));
           return false;
       }
 
@@ -115,7 +120,7 @@ bool Monitor::saveConfig() {
     QFile saveFile(QStringLiteral("save.json"));
 
       if (!saveFile.open(QIODevice::WriteOnly)) {
-          qDaemonLog("Couldn't open save file.", QDaemonLog::WarningEntry);
+          qDaemonLog(QString("Couldn't open config file %1 for writing.").arg(QFileInfo(saveFile).absoluteFilePath()), QDaemonLog::WarningEntry);
           return false;
       }
 

@@ -3,9 +3,11 @@
 #include "jsontools.h"
 
 void Switch::SwitchMessage::readJSON(const QJsonObject &json) {
+    int t;
     getJSONString(json, "InMessage", inMessage);
     getJSONString(json, "OutMessage", outMessage);
-    getJSONInt(json, "TimerEffect", reinterpret_cast<int&>(effect));
+    getJSONInt(json, "TimerEffect", t);
+    effect = Switch::TimerEffect(t);
 }
 
 void Switch::SwitchMessage::writeJSON(QJsonObject &json) const {
@@ -95,12 +97,17 @@ void Switch::processMessage(const QString& msg) {
             break;
 
         case TimerStop:
-            emit postMessage(mName, m->outMessage);
-            delayMessage = nullptr;
+            if (!delayMessage) {
+                emit postMessage(mName, m->outMessage);
+            }
+            else {
+                delayMessage = nullptr;
+            }
             myTimer.stop();
             break;
 
-        default:
+        case TimerNoEffect:
+            emit postMessage(mName, m->outMessage);
             break;
         }
     }
