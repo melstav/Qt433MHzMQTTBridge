@@ -1,5 +1,6 @@
 #include "switch.h"
 #include <QJsonArray>
+#include <QDaemonLog>
 #include "jsontools.h"
 
 void Switch::SwitchMessage::readJSON(const QJsonObject &json) {
@@ -88,6 +89,7 @@ void Switch::processMessage(const QString& msg) {
             if (delayTimerLen > 0) {
                 delayMessage = m;
                 myTimer.start(delayTimerLen);
+                qDaemonLog(QString("Switch %1 received message '%2'. Delaying for %3 ms.").arg(mName, m->outMessage, QString::number(delayTimerLen)));
             }
             else {
                 delayMessage = nullptr;
@@ -102,6 +104,7 @@ void Switch::processMessage(const QString& msg) {
             }
             else {
                 delayMessage = nullptr;
+                qDaemonLog(QString("Switch %1 canceling delayed announcement.").arg(mName));
             }
             myTimer.stop();
             break;

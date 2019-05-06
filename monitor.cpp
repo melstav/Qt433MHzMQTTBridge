@@ -226,7 +226,7 @@ void Monitor::onSerialDataReady() {
 
         if ( (line != prevLine) || (!repeatTimer.isActive()) ) {
             prevLine = line;
-            qDaemonLog() << "Received: " << line;
+            qDaemonLog() << QString("Received: %1").arg(QString(line));
             emit receivedMessage(line);
             if (switches.contains(line)) {
                 msgHandled = true;
@@ -264,7 +264,7 @@ void Monitor::setupSwitches() {
 }
 
 void Monitor::postedMessage(const QString& topic, const QString& message) {
-    qDaemonLog() << "Message to '" << topic << "' : " << message;
+    qDaemonLog() << QString("Message to '%1' : %2").arg(topic, message);
     if (m_client.publish((mqttSettings.topCategory + "/" + topic), message.toUtf8(), mqttSettings.msgQoS, mqttSettings.msgRetain) == -1)
         qDaemonLog("Could not publish the message.", QDaemonLog::WarningEntry);
 
